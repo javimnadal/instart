@@ -1,0 +1,16 @@
+# Study source documents kept local
+*.pdf
+*.PDF
+*.docx
+*.DOCX
+
+# Local generated deployment copy for manual Netlify Drop
+deploy/
+
+# Local tool caches
+tools/.image-cache.json
+__pycache__/
+*.pyc
+
+# System files
+.DS_Store

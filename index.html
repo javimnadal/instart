@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#111111" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="INSTART" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>INSTART</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/instart-icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/instart-icon.svg" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="mobile-header">
+        <button class="wordmark refresh-feed" type="button" aria-label="Refrescar feed">INSTART</button>
+        <div class="mobile-actions" aria-label="Acciones rapidas">
+          <button class="ghost-icon" type="button" aria-label="Buscar">⌕</button>
+          <button class="ghost-icon" id="mobileIndexButton" type="button" aria-label="Abrir índice">☷</button>
+        </div>
+      </header>
+
+      <aside class="sidebar" aria-label="Navegacion principal">
+        <div class="brand">
+          <span class="brand-mark">IN</span>
+          <div>
+            <button class="brand-title refresh-feed" type="button" aria-label="Refrescar feed">INSTART</button>
+            <p>Geografía e Historia · Murcia</p>
+          </div>
+        </div>
+
+        <nav class="nav-tabs" aria-label="Vistas">
+          <button class="nav-tab active" data-view="feed" type="button">
+            <span aria-hidden="true">⌂</span>
+            Feed
+          </button>
+          <button class="nav-tab" data-view="index" type="button">
+            <span aria-hidden="true">☷</span>
+            Índice
+          </button>
+          <button class="nav-tab" data-view="study" type="button">
+            <span aria-hidden="true">◫</span>
+            Estudiar
+          </button>
+          <button class="nav-tab" data-view="library" type="button">
+            <span aria-hidden="true">▦</span>
+            Biblioteca
+          </button>
+          <button class="nav-tab" data-view="import" type="button">
+            <span aria-hidden="true">＋</span>
+            Importar
+          </button>
+        </nav>
+
+        <section class="stats-panel" aria-label="Resumen de progreso">
+          <div>
+            <span id="dueCount">0</span>
+            <small>pendientes</small>
+          </div>
+          <div>
+            <span id="knownCount">0</span>
+            <small>dominadas</small>
+          </div>
+          <div>
+            <span id="totalCount">0</span>
+            <small>obras</small>
+          </div>
+        </section>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow" id="viewEyebrow">Exploracion</p>
+            <h2 id="viewTitle">Feed de obras</h2>
+          </div>
+          <div class="search-wrap">
+            <span aria-hidden="true">⌕</span>
+            <input id="searchInput" type="search" placeholder="Buscar obra, autor, estilo..." />
+          </div>
+        </header>
+
+        <section class="view active" id="feedView" aria-label="Feed visual">
+          <div class="pull-refresh" id="pullRefresh" aria-hidden="true">Suelta para refrescar</div>
+          <div class="review-strip" id="reviewStrip"></div>
+          <div class="stories-rail" id="storiesRail" aria-label="Filtros por estilo"></div>
+          <div class="feed-grid" id="feedGrid"></div>
+        </section>
+
+        <section class="view" id="indexView" aria-label="Indice de movimientos artisticos">
+          <div class="index-hero">
+            <div>
+              <p class="eyebrow">Mapa de estudio</p>
+              <h3>Cronología de movimientos</h3>
+              <p>Base desplegable para organizar temas, obras, autores y repasos por estilo.</p>
+            </div>
+            <span id="movementCount">0 estilos</span>
+          </div>
+          <div class="timeline-index" id="timelineIndex"></div>
+        </section>
+
+        <section class="view" id="studyView" aria-label="Estudio">
+          <div class="study-layout">
+            <article class="study-card" id="studyCard">
+              <div class="flip-card" id="flipCard">
+                <div class="flip-inner">
+                  <button class="flip-face flip-front" id="flipFront" type="button" aria-label="Revelar respuesta">
+                    <span class="art-frame">
+                      <img id="studyImage" alt="" />
+                    </span>
+                  </button>
+                  <div class="flip-face flip-back">
+                    <div class="study-content">
+                      <div class="prompt-row">
+                        <span class="tag" id="studyPeriod">Periodo</span>
+                        <span class="tag muted" id="studyDue">Hoy</span>
+                      </div>
+                      <div class="study-heading">
+                        <h3 id="studyPrompt">Obra</h3>
+                        <img id="studyThumb" alt="" />
+                      </div>
+                      <div id="studyMemoryMeter"></div>
+                      <div class="answer collapsed" id="answerBox">
+                        <dl>
+                          <div>
+                            <dt>Titulo</dt>
+                            <dd id="answerTitle"></dd>
+                          </div>
+                          <div>
+                            <dt>Autor</dt>
+                            <dd id="answerArtist"></dd>
+                          </div>
+                          <div>
+                            <dt>Fecha</dt>
+                            <dd id="answerDate"></dd>
+                          </div>
+                          <div>
+                            <dt>Estilo</dt>
+                            <dd id="answerStyle"></dd>
+                          </div>
+                          <div>
+                            <dt>Notas</dt>
+                            <dd id="answerNotes"></dd>
+                          </div>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <button class="icon-button" id="toggleFavorite" type="button" aria-label="Marcar favorita">☆</button>
+              </div>
+              <div class="study-actions">
+                <button class="primary-button" id="showAnswer" type="button">Ver respuesta</button>
+                <div class="rating-buttons" id="ratingButtons" hidden>
+                  <button data-rating="again" type="button">Otra vez</button>
+                  <button data-rating="hard" type="button">Dificil</button>
+                  <button data-rating="good" type="button">Bien</button>
+                  <button data-rating="easy" type="button">Facil</button>
+                </div>
+                <section class="analysis-panel" id="analysisPanel" hidden aria-label="Analisis orientativo"></section>
+              </div>
+            </article>
+
+            <aside class="queue-panel" hidden>
+              <h3>Cola de hoy</h3>
+              <div class="mini-list" id="queueList"></div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view" id="libraryView" aria-label="Biblioteca">
+          <div class="library-toolbar">
+            <select id="styleFilter" aria-label="Filtrar por estilo">
+              <option value="">Todos los estilos</option>
+            </select>
+            <select id="periodFilter" aria-label="Filtrar por periodo">
+              <option value="">Todos los periodos</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Obra</th>
+                  <th>Autor</th>
+                  <th>Fecha</th>
+                  <th>Estilo</th>
+                  <th>Progreso</th>
+                </tr>
+              </thead>
+              <tbody id="libraryRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="view" id="importView" aria-label="Importar datos">
+          <div class="import-layout">
+            <form class="editor-panel" id="artForm">
+              <h3>Nueva ficha</h3>
+              <label>Titulo<input name="title" required /></label>
+              <label>Autor<input name="artist" required /></label>
+              <label>Fecha<input name="date" placeholder="1503-1519" /></label>
+              <label>Estilo<input name="style" placeholder="Renacimiento" /></label>
+              <label>Periodo<input name="period" placeholder="Edad Moderna" /></label>
+              <label>Imagen<input name="image" placeholder="URL o ruta local" /></label>
+              <label>Notas<textarea name="notes" rows="4"></textarea></label>
+              <button class="primary-button" type="submit">Guardar obra</button>
+            </form>
+
+            <div class="editor-panel">
+              <h3>Importacion rapida</h3>
+              <p class="helper">Pega JSON con campos title, artist, date, style, period, image y notes.</p>
+              <textarea id="jsonImport" rows="10" spellcheck="false"></textarea>
+              <div class="import-actions">
+                <button class="secondary-button" id="loadSample" type="button">Cargar ejemplo</button>
+                <button class="primary-button" id="importJson" type="button">Importar JSON</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <nav class="bottom-nav" aria-label="Navegacion movil">
+        <button class="bottom-tab active" data-view="feed" type="button"><span>⌂</span><small>Feed</small></button>
+        <button class="bottom-tab" data-view="index" type="button"><span>☷</span><small>Índice</small></button>
+        <button class="bottom-tab" data-view="study" type="button"><span>◫</span><small>Repaso</small></button>
+        <button class="bottom-tab" data-view="import" type="button"><span>＋</span><small>Importar</small></button>
+      </nav>
+    </div>
+
+    <template id="emptyTemplate">
+      <div class="empty-state">
+        <h3>No hay obras que mostrar</h3>
+        <p>Importa tu base de datos o crea una ficha nueva para empezar a estudiar.</p>
+      </div>
+    </template>
+
+    <section class="story-viewer" id="storyViewer" aria-label="Story de obras" aria-hidden="true">
+      <div class="story-progress" id="storyProgress" aria-hidden="true"></div>
+      <button class="story-close" id="storyClose" type="button" aria-label="Cerrar story">×</button>
+      <button class="story-zone story-zone-left" id="storyPrev" type="button" aria-label="Imagen anterior"></button>
+      <button class="story-zone story-zone-right" id="storyNext" type="button" aria-label="Imagen siguiente"></button>
+      <div class="story-category-preview" id="storyCategoryPreview" aria-hidden="true">
+        <img id="storyPreviewImage" alt="" />
+      </div>
+      <div class="story-preview-label" id="storyPreviewLabel" aria-hidden="true"></div>
+      <figure class="story-frame" id="storyFrame">
+        <img id="storyImage" alt="" />
+        <figcaption>
+          <span id="storyStyle"></span>
+          <strong id="storyTitle"></strong>
+          <small id="storyMeta"></small>
+        </figcaption>
+      </figure>
+    </section>
+
+    <script src="artworks-data.js"></script>
+    <script src="chronology-data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

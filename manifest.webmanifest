@@ -1,0 +1,21 @@
+{
+  "name": "INSTART",
+  "short_name": "INSTART",
+  "description": "Feed visual y repaso tipo Anki para estudiar obras de arte.",
+  "lang": "es",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fbfbfb",
+  "theme_color": "#111111",
+  "icons": [
+    {
+      "src": "assets/instart-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"]
+}
