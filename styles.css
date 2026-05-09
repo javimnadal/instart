@@ -1401,6 +1401,15 @@ body.home-active .bottom-nav {
   font-weight: 900;
 }
 
+.scheme-summary {
+  border-top: 1px solid color-mix(in srgb, var(--scheme-accent) 16%, var(--line));
+  padding: 18px 22px;
+  background: color-mix(in srgb, var(--scheme-accent) 6%, #fff);
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
 .scheme-map {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -847,6 +847,7 @@ function renderSchemes() {
       </div>
       <em>${escapeHtml(String((scheme.sections || scheme.works || []).length))} bloques</em>
     </header>
+    ${scheme.summary ? `<p class="scheme-summary">${escapeHtml(scheme.summary)}</p>` : ""}
     ${scheme.sections ? schemeSectionsMarkup(scheme.sections) : `
       <div class="scheme-map">
         ${schemeColumn("Contexto", scheme.context, "nodes")}
