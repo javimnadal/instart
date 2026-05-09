@@ -18,6 +18,7 @@ let answerVisible = false;
 let activeStyle = "";
 let activeSchemeGroup = "";
 let activeSchemeTitle = "";
+let schemesMenuCollapsed = false;
 let feedShuffleSeed = Math.random();
 let storyQueue = [];
 let storyIndex = 0;
@@ -800,6 +801,7 @@ function renderSchemes() {
   }
 
   els.schemeTabs.replaceChildren();
+  els.schemeTabs.classList.toggle("collapsed", schemesMenuCollapsed);
 
   if (!schemes.length) {
     els.schemesBoard.innerHTML = `<div class="empty-state"><h3>Esquemas en preparacion</h3><p>Aqui apareceran los mapas visuales por estilo.</p></div>`;
@@ -808,6 +810,7 @@ function renderSchemes() {
 
   if (!activeSchemeTitle || !schemes.some((scheme) => scheme.title === activeSchemeTitle)) {
     activeSchemeTitle = schemes[0].title;
+    schemesMenuCollapsed = false;
   }
 
   schemes.forEach((scheme) => {
@@ -820,7 +823,11 @@ function renderSchemes() {
     `;
     button.addEventListener("click", () => {
       activeSchemeTitle = scheme.title;
+      schemesMenuCollapsed = true;
       renderSchemes();
+      requestAnimationFrame(() => {
+        els.schemesBoard.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
     });
     els.schemeTabs.append(button);
   });

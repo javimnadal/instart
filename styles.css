@@ -1276,6 +1276,22 @@ body.home-active .bottom-nav {
   gap: 8px;
 }
 
+.scheme-tabs.collapsed {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  overflow-x: auto;
+  margin: -4px -4px 0;
+  padding: 4px 4px 10px;
+  background: linear-gradient(180deg, var(--surface) 76%, rgba(255, 255, 255, 0));
+  scrollbar-width: none;
+}
+
+.scheme-tabs.collapsed::-webkit-scrollbar {
+  display: none;
+}
+
 .scheme-tabs button {
   display: grid;
   gap: 4px;
@@ -1285,6 +1301,16 @@ body.home-active .bottom-nav {
   background: #fff;
   color: var(--ink);
   text-align: left;
+}
+
+.scheme-tabs.collapsed button {
+  flex: 0 0 auto;
+  min-width: 118px;
+  padding: 8px 10px;
+}
+
+.scheme-tabs.collapsed button:not(.active) {
+  display: none;
 }
 
 .scheme-tabs button span {
