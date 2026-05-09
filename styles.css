@@ -56,9 +56,14 @@ button {
 .destination-grid {
   display: grid;
   grid-template-rows: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   width: min(1180px, 100%);
   height: min(680px, calc(100vh - 64px));
   gap: clamp(12px, 2vw, 22px);
+}
+
+.destination-instagram {
+  grid-column: 1 / -1;
 }
 
 .destination-card {
@@ -145,6 +150,20 @@ button {
 .destination-data {
   background: linear-gradient(135deg, #f7fbff, #fff7fb 54%, #fffaf0);
   color: #171717;
+}
+
+.destination-schemes {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(47, 111, 115, 0.28), transparent 32%),
+    radial-gradient(circle at 84% 86%, rgba(196, 154, 69, 0.22), transparent 34%),
+    linear-gradient(135deg, #f9faf5, #eef5f2);
+  color: #17201e;
+}
+
+.destination-schemes::before {
+  background:
+    linear-gradient(135deg, rgba(47, 111, 115, 0.08) 25%, transparent 25%) 0 0 / 34px 34px,
+    linear-gradient(225deg, rgba(47, 111, 115, 0.08) 25%, transparent 25%) 0 0 / 34px 34px;
 }
 
 .destination-instagram {
@@ -1225,6 +1244,145 @@ body.home-active .bottom-nav {
   font-weight: 800;
 }
 
+.schemes-hero {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  background: var(--surface);
+}
+
+.schemes-hero h3,
+.schemes-hero p {
+  margin: 0;
+}
+
+.schemes-hero h3 {
+  margin-top: 4px;
+  font-size: 1.55rem;
+}
+
+.schemes-hero p:last-child {
+  margin-top: 8px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.scheme-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.scheme-tabs button {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.scheme-tabs button.active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.schemes-board {
+  display: grid;
+  gap: 14px;
+}
+
+.scheme-card {
+  --scheme-accent: var(--accent);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 12px 34px rgba(23, 23, 23, 0.06);
+}
+
+.scheme-card > header {
+  display: grid;
+  gap: 4px;
+  border-left: 9px solid var(--scheme-accent);
+  padding: 16px 18px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--scheme-accent) 12%, #fff), #fff);
+}
+
+.scheme-card header span {
+  color: var(--scheme-accent);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.scheme-card h3,
+.scheme-card h4,
+.scheme-card ul,
+.scheme-card p {
+  margin: 0;
+}
+
+.scheme-card h3 {
+  font-size: 1.45rem;
+}
+
+.scheme-card header small {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.scheme-map {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+}
+
+.scheme-map section {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 14px;
+  background: #fff;
+}
+
+.scheme-map h4 {
+  color: var(--scheme-accent);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.scheme-map ul {
+  display: grid;
+  gap: 8px;
+  padding-left: 18px;
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.scheme-exam {
+  border-top: 1px solid var(--line);
+  padding: 14px 18px;
+  background: #fbfbfb;
+  color: var(--ink);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.scheme-exam strong {
+  color: var(--scheme-accent);
+}
+
 select {
   min-height: 40px;
   border: 1px solid var(--line);
@@ -1650,6 +1808,8 @@ th {
   .review-strip,
   .index-hero,
   .database-hero,
+  .schemes-hero,
+  .scheme-card,
   .era-panel,
   .feed-card,
   .flip-face,
@@ -1692,6 +1852,8 @@ th {
   }
 
   .destination-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(3, minmax(0, 1fr));
     min-height: 0;
   }
 
@@ -1706,6 +1868,10 @@ th {
   }
 
   .database-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .scheme-map {
     grid-template-columns: 1fr;
   }
 

@@ -1,4 +1,4 @@
-const CACHE_VERSION = "instart-v2";
+const CACHE_VERSION = "instart-v3";
 const APP_SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const IMAGE_CACHE = `${CACHE_VERSION}-images`;
 
@@ -9,6 +9,7 @@ const APP_SHELL = [
   "./app.js",
   "./artworks-data.js",
   "./chronology-data.js",
+  "./schemes-data.js",
   "./manifest.webmanifest",
   "./assets/instart-icon.svg"
 ];

@@ -27,6 +27,11 @@
             <strong>BASE DATOS</strong>
             <small>Ordenar, filtrar e ingestar obras</small>
           </button>
+          <button class="destination-card destination-schemes" data-destination="schemes" type="button">
+            <span class="destination-kicker">Mapas de estudio</span>
+            <strong>ESQUEMAS</strong>
+            <small>Comparar estilos y memorizar claves</small>
+          </button>
         </div>
       </section>
 
@@ -55,6 +60,10 @@
           <button class="nav-tab" data-view="index" type="button">
             <span aria-hidden="true">☷</span>
             Índice
+          </button>
+          <button class="nav-tab" data-view="schemes" type="button">
+            <span aria-hidden="true">◇</span>
+            Esquemas
           </button>
           <button class="nav-tab" data-view="study" type="button">
             <span aria-hidden="true">◫</span>
@@ -115,6 +124,18 @@
             <span id="movementCount">0 estilos</span>
           </div>
           <div class="timeline-index" id="timelineIndex"></div>
+        </section>
+
+        <section class="view" id="schemesView" aria-label="Esquemas visuales de arte">
+          <div class="schemes-hero">
+            <div>
+              <p class="eyebrow">ESQUEMAS</p>
+              <h3>Mapas visuales de estilos</h3>
+              <p>Lectura rapida para ordenar contexto, rasgos, obras y frase de examen.</p>
+            </div>
+            <div class="scheme-tabs" id="schemeTabs" aria-label="Filtros de esquemas"></div>
+          </div>
+          <div class="schemes-board" id="schemesBoard"></div>
         </section>
 
         <section class="view" id="studyView" aria-label="Estudio">
@@ -254,6 +275,7 @@
       <nav class="bottom-nav" aria-label="Navegacion movil">
         <button class="bottom-tab active" data-view="feed" type="button"><span>⌂</span><small>Feed</small></button>
         <button class="bottom-tab" data-view="index" type="button"><span>☷</span><small>Índice</small></button>
+        <button class="bottom-tab" data-view="schemes" type="button"><span>◇</span><small>Esquemas</small></button>
         <button class="bottom-tab" data-view="study" type="button"><span>◫</span><small>Repaso</small></button>
         <button class="bottom-tab" data-view="import" type="button"><span>＋</span><small>Importar</small></button>
       </nav>
@@ -287,6 +309,7 @@
 
     <script src="artworks-data.js"></script>
     <script src="chronology-data.js"></script>
+    <script src="schemes-data.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

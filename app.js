@@ -16,6 +16,7 @@ let currentView = "home";
 let currentCard = null;
 let answerVisible = false;
 let activeStyle = "";
+let activeSchemeGroup = "";
 let feedShuffleSeed = Math.random();
 let storyQueue = [];
 let storyIndex = 0;
@@ -58,6 +59,7 @@ const els = {
   views: {
     home: document.querySelector("#homeView"),
     index: document.querySelector("#indexView"),
+    schemes: document.querySelector("#schemesView"),
     study: document.querySelector("#studyView"),
     feed: document.querySelector("#feedView"),
     library: document.querySelector("#libraryView"),
@@ -95,6 +97,8 @@ const els = {
   storiesRail: document.querySelector("#storiesRail"),
   timelineIndex: document.querySelector("#timelineIndex"),
   movementCount: document.querySelector("#movementCount"),
+  schemeTabs: document.querySelector("#schemeTabs"),
+  schemesBoard: document.querySelector("#schemesBoard"),
   databaseTotal: document.querySelector("#databaseTotal"),
   databaseStyles: document.querySelector("#databaseStyles"),
   databaseImages: document.querySelector("#databaseImages"),
@@ -782,9 +786,68 @@ function render() {
   renderReviewStrip();
   renderStories();
   renderTimelineIndex();
+  renderSchemes();
   renderStudy();
   renderFeed();
   renderLibrary();
+}
+
+function renderSchemes() {
+  const schemes = getSchemes();
+  if (!els.schemesBoard || !els.schemeTabs) {
+    return;
+  }
+
+  const groups = ["Todos", ...new Set(schemes.map((scheme) => scheme.group).filter(Boolean))];
+  els.schemeTabs.replaceChildren();
+  groups.forEach((group) => {
+    const value = group === "Todos" ? "" : group;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = value === activeSchemeGroup ? "active" : "";
+    button.textContent = group;
+    button.addEventListener("click", () => {
+      activeSchemeGroup = value;
+      renderSchemes();
+    });
+    els.schemeTabs.append(button);
+  });
+
+  const visibleSchemes = activeSchemeGroup
+    ? schemes.filter((scheme) => scheme.group === activeSchemeGroup)
+    : schemes;
+  els.schemesBoard.replaceChildren();
+
+  visibleSchemes.forEach((scheme) => {
+    const card = document.createElement("article");
+    card.className = "scheme-card";
+    card.style.setProperty("--scheme-accent", scheme.accent || "#e1306c");
+    card.innerHTML = `
+      <header>
+        <span>${escapeHtml(scheme.group)}</span>
+        <h3>${escapeHtml(scheme.title)}</h3>
+        <small>${escapeHtml(scheme.range)}</small>
+      </header>
+      <div class="scheme-map">
+        ${schemeColumn("Contexto", scheme.context)}
+        ${schemeColumn("Rasgos", scheme.traits)}
+        ${schemeColumn("Obras", scheme.works)}
+      </div>
+      <p class="scheme-exam"><strong>Examen.</strong> ${escapeHtml(scheme.exam)}</p>
+    `;
+    els.schemesBoard.append(card);
+  });
+}
+
+function schemeColumn(title, items = []) {
+  return `
+    <section>
+      <h4>${escapeHtml(title)}</h4>
+      <ul>
+        ${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+      </ul>
+    </section>
+  `;
 }
 
 function renderTimelineIndex() {
@@ -849,6 +912,7 @@ function switchView(view) {
     home: ["Entrada", "INSTART"],
     feed: ["Exploracion", "Feed de obras"],
     index: ["Mapa de estudio", "Índice"],
+    schemes: ["Esquemas", "Mapas visuales"],
     study: ["Sesion activa", "Repaso visual"],
     library: ["Base de datos", "Repositorio"],
     import: ["Ingesta", "Importar fichas"]
@@ -879,6 +943,10 @@ function returnToFeedPosition(behavior = "auto") {
 
 function getChronology() {
   return Array.isArray(window.ARS_MEMORIA_CHRONOLOGY) ? window.ARS_MEMORIA_CHRONOLOGY : [];
+}
+
+function getSchemes() {
+  return Array.isArray(window.ARS_MEMORIA_SCHEMES) ? window.ARS_MEMORIA_SCHEMES : [];
 }
 
 function getChronologyMovements() {
