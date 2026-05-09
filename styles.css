@@ -40,103 +40,52 @@ button {
 }
 
 .home-gateway {
+  display: grid;
   min-height: 100vh;
-  padding: 42px;
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.92) 0 50%, rgba(17, 17, 17, 0.92) 50% 100%),
-    radial-gradient(circle at 24% 20%, rgba(225, 48, 108, 0.16), transparent 32%),
-    radial-gradient(circle at 82% 72%, rgba(247, 119, 55, 0.18), transparent 30%),
-    var(--bg);
+  place-items: center;
+  padding: clamp(14px, 3vw, 32px);
+  background: #f4f4f2;
 }
 
-.home-brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  max-width: 1120px;
-  margin: 0 auto 34px;
-}
-
-.home-brand h1,
-.home-brand p {
-  margin: 0;
-}
-
-.home-brand h1 {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2rem, 5vw, 4.5rem);
-  line-height: 0.95;
-}
-
-.home-brand p {
-  color: var(--muted);
-  font-weight: 800;
+.home-gateway.active {
+  display: grid;
 }
 
 .destination-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  min-height: min(620px, calc(100vh - 190px));
-  max-width: 1120px;
-  margin: 0 auto;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
+  width: min(1180px, 100%);
+  height: min(680px, calc(100vh - 64px));
+  gap: clamp(12px, 2vw, 22px);
 }
 
 .destination-card {
   display: grid;
-  align-content: end;
-  gap: 14px;
-  min-height: 460px;
-  border: 0;
-  padding: clamp(24px, 5vw, 54px);
-  text-align: left;
-}
-
-.destination-card span {
-  font-size: 0.86rem;
-  font-weight: 900;
-  text-transform: uppercase;
+  min-height: 320px;
+  place-items: center;
+  border: 1px solid #d9d8d3;
+  border-radius: 8px;
+  padding: clamp(18px, 4vw, 48px);
+  background: #fbfbf8;
+  color: #171717;
+  text-align: center;
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
 }
 
 .destination-card strong {
-  font-size: clamp(2.3rem, 7vw, 6.8rem);
-  line-height: 0.86;
+  font-size: clamp(2.6rem, 8vw, 8.4rem);
+  line-height: 0.9;
   letter-spacing: 0;
 }
 
-.destination-card small {
-  max-width: 360px;
-  font-size: 1rem;
-  line-height: 1.45;
-}
-
-.destination-data {
-  background: #fff;
-  color: var(--ink);
-}
-
-.destination-data span,
-.destination-data small {
-  color: var(--muted);
-}
-
 .destination-instagram {
-  background:
-    linear-gradient(135deg, rgba(131, 58, 180, 0.92), rgba(225, 48, 108, 0.95), rgba(247, 119, 55, 0.94)),
-    #111;
-  color: #fff;
-}
-
-.destination-instagram small {
-  color: rgba(255, 255, 255, 0.78);
+  background: #171717;
+  color: #fbfbf8;
 }
 
 .destination-card:hover {
-  filter: saturate(1.08);
+  transform: translateY(-2px);
+  border-color: #171717;
 }
 
 body.home-active {
