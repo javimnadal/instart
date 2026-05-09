@@ -15,6 +15,28 @@
   </head>
   <body>
     <div class="app-shell">
+      <section class="view home-gateway active" id="homeView" aria-label="Entrada a INSTART">
+        <div class="home-brand">
+          <span class="brand-mark">IN</span>
+          <div>
+            <h1>INSTART</h1>
+            <p>Arte para oposicion · Base de datos y repaso visual</p>
+          </div>
+        </div>
+        <div class="destination-grid" aria-label="Elegir modalidad">
+          <button class="destination-card destination-data" data-destination="library" type="button">
+            <span>01</span>
+            <strong>BASE DATOS</strong>
+            <small>Repositorio limpio para ingestar, ordenar y preparar fichas de obras.</small>
+          </button>
+          <button class="destination-card destination-instagram" data-destination="feed" type="button">
+            <span>02</span>
+            <strong>INSTAGRAM</strong>
+            <small>Feed visual, stories y repaso tipo Anki con aleatoriedad.</small>
+          </button>
+        </div>
+      </section>
+
       <header class="mobile-header">
         <button class="wordmark refresh-feed" type="button" aria-label="Refrescar feed">INSTART</button>
         <div class="mobile-actions" aria-label="Acciones rapidas">
@@ -172,6 +194,19 @@
         </section>
 
         <section class="view" id="libraryView" aria-label="Biblioteca">
+          <div class="database-hero">
+            <div>
+              <p class="eyebrow">BASE DATOS</p>
+              <h3>Repositorio de obras</h3>
+              <p>Zona limpia para revisar lo que ya esta dentro de INSTART y preparar las siguientes ingestas.</p>
+            </div>
+            <button class="primary-button" data-view-jump="import" type="button">Ingestar archivos</button>
+          </div>
+          <div class="database-kpis" aria-label="Resumen de base de datos">
+            <div><strong id="databaseTotal">0</strong><span>obras</span></div>
+            <div><strong id="databaseStyles">0</strong><span>estilos</span></div>
+            <div><strong id="databaseImages">0</strong><span>imagenes locales</span></div>
+          </div>
           <div class="library-toolbar">
             <select id="styleFilter" aria-label="Filtrar por estilo">
               <option value="">Todos los estilos</option>

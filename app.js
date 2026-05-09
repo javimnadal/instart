@@ -12,7 +12,7 @@ const sampleArtworks = [];
 registerServiceWorker();
 
 let artworks = loadArtworks();
-let currentView = "feed";
+let currentView = "home";
 let currentCard = null;
 let answerVisible = false;
 let activeStyle = "";
@@ -49,11 +49,14 @@ function registerServiceWorker() {
 }
 
 const els = {
+  destinationCards: document.querySelectorAll(".destination-card"),
+  viewJumpButtons: document.querySelectorAll("[data-view-jump]"),
   refreshFeedButtons: document.querySelectorAll(".refresh-feed"),
   navTabs: document.querySelectorAll(".nav-tab"),
   bottomTabs: document.querySelectorAll(".bottom-tab"),
   mobileIndexButton: document.querySelector("#mobileIndexButton"),
   views: {
+    home: document.querySelector("#homeView"),
     index: document.querySelector("#indexView"),
     study: document.querySelector("#studyView"),
     feed: document.querySelector("#feedView"),
@@ -92,6 +95,9 @@ const els = {
   storiesRail: document.querySelector("#storiesRail"),
   timelineIndex: document.querySelector("#timelineIndex"),
   movementCount: document.querySelector("#movementCount"),
+  databaseTotal: document.querySelector("#databaseTotal"),
+  databaseStyles: document.querySelector("#databaseStyles"),
+  databaseImages: document.querySelector("#databaseImages"),
   libraryRows: document.querySelector("#libraryRows"),
   styleFilter: document.querySelector("#styleFilter"),
   periodFilter: document.querySelector("#periodFilter"),
@@ -715,6 +721,10 @@ function shuffleArtworks(items) {
 
 function renderLibrary() {
   const items = getFilteredArtworks();
+  const localImages = artworks.filter((artwork) => String(artwork.image || "").startsWith("assets/")).length;
+  els.databaseTotal.textContent = artworks.length;
+  els.databaseStyles.textContent = uniqueValues("style").length;
+  els.databaseImages.textContent = localImages;
   els.libraryRows.replaceChildren();
 
   if (!items.length) {
@@ -830,16 +840,18 @@ function switchView(view) {
   }
 
   currentView = view;
+  document.body.classList.toggle("home-active", view === "home");
   els.navTabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === view));
   els.bottomTabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === view));
   Object.entries(els.views).forEach(([key, element]) => element.classList.toggle("active", key === view));
 
   const copy = {
+    home: ["Entrada", "INSTART"],
     feed: ["Exploracion", "Feed de obras"],
     index: ["Mapa de estudio", "Índice"],
     study: ["Sesion activa", "Repaso visual"],
-    library: ["Base de datos", "Biblioteca"],
-    import: ["Gestion", "Importar fichas"]
+    library: ["Base de datos", "Repositorio"],
+    import: ["Ingesta", "Importar fichas"]
   };
 
   els.viewEyebrow.textContent = copy[view][0];
@@ -949,6 +961,11 @@ function scrollFeedToTop() {
 }
 
 function handleNavClick(view) {
+  if (view === "home") {
+    switchView("home");
+    return;
+  }
+
   if (view !== "feed") {
     lastFeedNavClick = 0;
     switchView(view);
@@ -1262,6 +1279,15 @@ function importRecords(records) {
   render();
 }
 
+els.destinationCards.forEach((button) => {
+  button.addEventListener("click", () => {
+    switchView(button.dataset.destination || "feed");
+    window.scrollTo({ top: 0, behavior: "auto" });
+  });
+});
+els.viewJumpButtons.forEach((button) => {
+  button.addEventListener("click", () => handleNavClick(button.dataset.viewJump));
+});
 els.refreshFeedButtons.forEach((button) => button.addEventListener("click", refreshFeed));
 els.navTabs.forEach((tab) => tab.addEventListener("click", () => handleNavClick(tab.dataset.view)));
 els.bottomTabs.forEach((tab) => tab.addEventListener("click", () => handleNavClick(tab.dataset.view)));
@@ -1382,4 +1408,5 @@ document.addEventListener("error", (event) => {
 
 renderFilters();
 selectNextCard();
+switchView("home");
 render();
