@@ -1,4 +1,4 @@
-const CACHE_VERSION = "instart-v7";
+const CACHE_VERSION = "instart-v8";
 const APP_SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const IMAGE_CACHE = `${CACHE_VERSION}-images`;
 
