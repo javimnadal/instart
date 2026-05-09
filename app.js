@@ -40,6 +40,7 @@ let studySwipeStartY = 0;
 let studySwipeActive = false;
 let lastStudyTap = 0;
 let studyTapTimer = null;
+let lastSchemeTap = 0;
 
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) {
@@ -869,6 +870,31 @@ function schemeColumn(title, items = [], mode = "nodes") {
   `;
 }
 
+function handleSchemeDoubleTap(event) {
+  if (currentView !== "schemes" || !event.target.closest(".scheme-card")) {
+    return;
+  }
+
+  const now = Date.now();
+  if (now - lastSchemeTap < 320) {
+    lastSchemeTap = 0;
+    schemesMenuCollapsed = false;
+    event.preventDefault();
+    renderSchemes();
+    requestAnimationFrame(() => {
+      els.schemeTabs.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return;
+  }
+
+  lastSchemeTap = now;
+  window.setTimeout(() => {
+    if (Date.now() - lastSchemeTap >= 320) {
+      lastSchemeTap = 0;
+    }
+  }, 340);
+}
+
 function renderTimelineIndex() {
   const chronology = getChronology();
   if (!els.timelineIndex) {
@@ -1442,6 +1468,7 @@ els.views.study.addEventListener("pointercancel", () => {
   studySwipeActive = false;
 });
 els.views.study.addEventListener("pointerup", handleStudyDoubleTap);
+els.views.schemes.addEventListener("pointerup", handleSchemeDoubleTap);
 els.storyViewer.addEventListener("pointerdown", startStoryDrag);
 els.storyViewer.addEventListener("pointermove", moveStoryDrag);
 els.storyViewer.addEventListener("selectstart", (event) => event.preventDefault());
