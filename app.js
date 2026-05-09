@@ -17,6 +17,7 @@ let currentCard = null;
 let answerVisible = false;
 let activeStyle = "";
 let activeSchemeGroup = "";
+let activeSchemeTitle = "";
 let feedShuffleSeed = Math.random();
 let storyQueue = [];
 let storyIndex = 0;
@@ -798,54 +799,65 @@ function renderSchemes() {
     return;
   }
 
-  const groups = ["Todos", ...new Set(schemes.map((scheme) => scheme.group).filter(Boolean))];
   els.schemeTabs.replaceChildren();
-  groups.forEach((group) => {
-    const value = group === "Todos" ? "" : group;
+
+  if (!schemes.length) {
+    els.schemesBoard.innerHTML = `<div class="empty-state"><h3>Esquemas en preparacion</h3><p>Aqui apareceran los mapas visuales por estilo.</p></div>`;
+    return;
+  }
+
+  if (!activeSchemeTitle || !schemes.some((scheme) => scheme.title === activeSchemeTitle)) {
+    activeSchemeTitle = schemes[0].title;
+  }
+
+  schemes.forEach((scheme) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = value === activeSchemeGroup ? "active" : "";
-    button.textContent = group;
+    button.className = scheme.title === activeSchemeTitle ? "active" : "";
+    button.innerHTML = `
+      <span>${escapeHtml(scheme.group)}</span>
+      <strong>${escapeHtml(scheme.title)}</strong>
+    `;
     button.addEventListener("click", () => {
-      activeSchemeGroup = value;
+      activeSchemeTitle = scheme.title;
       renderSchemes();
     });
     els.schemeTabs.append(button);
   });
 
-  const visibleSchemes = activeSchemeGroup
-    ? schemes.filter((scheme) => scheme.group === activeSchemeGroup)
-    : schemes;
+  const scheme = schemes.find((item) => item.title === activeSchemeTitle) || schemes[0];
   els.schemesBoard.replaceChildren();
-
-  visibleSchemes.forEach((scheme) => {
-    const card = document.createElement("article");
-    card.className = "scheme-card";
-    card.style.setProperty("--scheme-accent", scheme.accent || "#e1306c");
-    card.innerHTML = `
-      <header>
+  const card = document.createElement("article");
+  card.className = "scheme-card";
+  card.style.setProperty("--scheme-accent", scheme.accent || "#e1306c");
+  card.innerHTML = `
+    <header>
+      <div>
         <span>${escapeHtml(scheme.group)}</span>
         <h3>${escapeHtml(scheme.title)}</h3>
         <small>${escapeHtml(scheme.range)}</small>
-      </header>
-      <div class="scheme-map">
-        ${schemeColumn("Contexto", scheme.context)}
-        ${schemeColumn("Rasgos", scheme.traits)}
-        ${schemeColumn("Obras", scheme.works)}
       </div>
-      <p class="scheme-exam"><strong>Examen.</strong> ${escapeHtml(scheme.exam)}</p>
-    `;
-    els.schemesBoard.append(card);
-  });
+      <em>${escapeHtml(String((scheme.works || []).length))} obras clave</em>
+    </header>
+    <div class="scheme-map">
+      ${schemeColumn("Contexto", scheme.context, "nodes")}
+      ${schemeColumn("Rasgos visuales", scheme.traits, "nodes")}
+      ${schemeColumn("Obras clave", scheme.works, "chips")}
+    </div>
+    <p class="scheme-exam"><strong>Frase de examen.</strong> ${escapeHtml(scheme.exam)}</p>
+  `;
+  els.schemesBoard.append(card);
 }
 
-function schemeColumn(title, items = []) {
+function schemeColumn(title, items = [], mode = "nodes") {
+  const content = mode === "chips"
+    ? `<div class="scheme-chips">${items.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>`
+    : `<ol>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ol>`;
+
   return `
     <section>
       <h4>${escapeHtml(title)}</h4>
-      <ul>
-        ${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
-      </ul>
+      ${content}
     </section>
   `;
 }
