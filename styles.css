@@ -55,7 +55,7 @@ button {
 
 .destination-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
   width: min(1180px, 100%);
   height: min(680px, calc(100vh - 64px));
   gap: clamp(12px, 2vw, 22px);
@@ -135,12 +135,15 @@ button {
 
 .destination-data::before {
   background:
-    linear-gradient(90deg, rgba(23, 23, 23, 0.045) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(23, 23, 23, 0.045) 1px, transparent 1px);
+    radial-gradient(circle at 18% 20%, rgba(20, 105, 150, 0.26), transparent 32%),
+    radial-gradient(circle at 88% 78%, rgba(225, 48, 108, 0.2), transparent 30%),
+    linear-gradient(90deg, rgba(20, 105, 150, 0.08) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(20, 105, 150, 0.08) 1px, transparent 1px);
   background-size: 28px 28px;
 }
 
 .destination-data {
+  background: linear-gradient(135deg, #f7fbff, #fff7fb 54%, #fffaf0);
   color: #171717;
 }
 
@@ -1689,7 +1692,6 @@ th {
   }
 
   .destination-grid {
-    grid-template-columns: 1fr;
     min-height: 0;
   }
 
