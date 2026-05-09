@@ -845,16 +845,34 @@ function renderSchemes() {
         <h3>${escapeHtml(scheme.title)}</h3>
         <small>${escapeHtml(scheme.range)}</small>
       </div>
-      <em>${escapeHtml(String((scheme.works || []).length))} obras clave</em>
+      <em>${escapeHtml(String((scheme.sections || scheme.works || []).length))} bloques</em>
     </header>
-    <div class="scheme-map">
-      ${schemeColumn("Contexto", scheme.context, "nodes")}
-      ${schemeColumn("Rasgos visuales", scheme.traits, "nodes")}
-      ${schemeColumn("Obras clave", scheme.works, "chips")}
-    </div>
+    ${scheme.sections ? schemeSectionsMarkup(scheme.sections) : `
+      <div class="scheme-map">
+        ${schemeColumn("Contexto", scheme.context, "nodes")}
+        ${schemeColumn("Rasgos visuales", scheme.traits, "nodes")}
+        ${schemeColumn("Obras clave", scheme.works, "chips")}
+      </div>
+    `}
     <p class="scheme-exam"><strong>Frase de examen.</strong> ${escapeHtml(scheme.exam)}</p>
   `;
   els.schemesBoard.append(card);
+}
+
+function schemeSectionsMarkup(sections = []) {
+  return `
+    <div class="scheme-sections">
+      ${sections.map((section, index) => `
+        <section>
+          <span>${String(index + 1).padStart(2, "0")}</span>
+          <div>
+            <h4>${escapeHtml(section.title)}</h4>
+            <p>${escapeHtml((section.topics || []).join(" · "))}</p>
+          </div>
+        </section>
+      `).join("")}
+    </div>
+  `;
 }
 
 function schemeColumn(title, items = [], mode = "nodes") {
