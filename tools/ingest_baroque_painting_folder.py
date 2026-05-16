@@ -20,7 +20,18 @@ from PIL import Image, ImageOps
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SOURCE_ROOT = Path("/Users/elenacosta/Downloads/Pintura")
+SOURCE_CONFIGS = [
+    {
+        "root": Path("/Users/elenacosta/Downloads/Pintura"),
+        "country_from_path": True,
+        "country": "",
+    },
+    {
+        "root": Path("/Users/elenacosta/Downloads/Pintura española"),
+        "country_from_path": False,
+        "country": "España",
+    },
+]
 OUTPUT_DIR = PROJECT_ROOT / "assets" / "artworks"
 DATA_FILE = PROJECT_ROOT / "artworks-data.js"
 IMAGE_PREFIX = "barroco-pintura"
@@ -39,11 +50,15 @@ CATEGORY_NAMES = {
     "mitología y alegoria",
     "mitología y alegorias",
     "mitología y alegorías",
+    "mitologias y alegorias",
+    "mitologías y alegorias",
+    "mitologías y alegorías",
     "paisajes",
     "paisajes y retratos",
     "paisajes y vistas",
     "religion",
     "religión",
+    "religiosos",
     "retratos",
     "retratos y costumbres e historia",
     "varios",
@@ -54,6 +69,7 @@ STYLE_BY_COUNTRY = {
     "Francia": "Pintura barroca francesa",
     "Holanda": "Pintura barroca holandesa",
     "Italia": "Pintura barroca italiana",
+    "España": "Pintura barroca española",
 }
 
 
@@ -142,83 +158,98 @@ def build_records() -> tuple[list[dict], Counter]:
     records = []
     counters: Counter[str] = Counter()
     stats: Counter[str] = Counter()
-    image_paths = sorted(
-        path
-        for path in SOURCE_ROOT.rglob("*")
-        if path.is_file()
-        and path.suffix.lower() in IMAGE_EXTENSIONS
-        and path.name.lower() not in IGNORED_NAMES
-    )
 
-    for source in image_paths:
-        relative_parts = list(source.relative_to(SOURCE_ROOT).parts)
-        if len(relative_parts) < 3:
-            stats["skipped_too_shallow"] += 1
+    for config in SOURCE_CONFIGS:
+        root = config["root"]
+        if not root.exists():
+            stats[f"missing:{root}"] += 1
             continue
 
-        country = relative_parts[0]
-        folder_parts = relative_parts[:-1]
-        artist, school_parts, category_parts = choose_artist(folder_parts)
-        title = title_from_file(source)
-        category = " / ".join(category_parts)
-        school = " / ".join(school_parts)
-        style = STYLE_BY_COUNTRY.get(country, "Pintura barroca")
+        image_paths = sorted(
+            path
+            for path in root.rglob("*")
+            if path.is_file()
+            and path.suffix.lower() in IMAGE_EXTENSIONS
+            and path.name.lower() not in IGNORED_NAMES
+        )
 
-        base_slug = slugify(f"{IMAGE_PREFIX}-{country}-{artist}-{title}")
-        counters[base_slug] += 1
-        slug = base_slug if counters[base_slug] == 1 else f"{base_slug}-{counters[base_slug]}"
-        output_name = f"{slug}.jpg"
-        output_path = OUTPUT_DIR / output_name
+        for source in image_paths:
+            relative_parts = list(source.relative_to(root).parts)
+            minimum_depth = 3 if config["country_from_path"] else 2
+            if len(relative_parts) < minimum_depth:
+                stats["skipped_too_shallow"] += 1
+                continue
 
-        try:
-            width, height = convert_image(source, output_path)
-        except Exception as exc:  # noqa: BLE001 - keep ingest going and report file count.
-            print(f"SKIP {source}: {exc}")
-            stats["skipped_unreadable"] += 1
-            continue
+            if config["country_from_path"]:
+                country = relative_parts[0]
+                folder_parts = relative_parts[:-1]
+                artist, school_parts, category_parts = choose_artist(folder_parts)
+            else:
+                country = str(config["country"])
+                source_folder_parts = relative_parts[:-1]
+                artist, school_parts, category_parts = choose_artist([country, *source_folder_parts])
+                folder_parts = [country, *source_folder_parts]
 
-        notes = [
-            "Pintura barroca.",
-            f"País/ámbito: {country}.",
-            f"Autor: {artist}.",
-        ]
-        if school:
-            notes.append(f"Corriente o escuela: {school}.")
-        if category:
-            notes.append(f"Tema de la carpeta original: {category}.")
-        notes.append("Imagen incorporada desde la carpeta local de pintura barroca para estudio visual tipo INSTART.")
+            title = title_from_file(source)
+            category = " / ".join(category_parts)
+            school = " / ".join(school_parts)
+            style = STYLE_BY_COUNTRY.get(country, "Pintura barroca")
 
-        record = {
-            "id": slug,
-            "title": title,
-            "artist": artist,
-            "date": "siglo XVII",
-            "style": style,
-            "period": "Barroco",
-            "type": "Pintura",
-            "country": country,
-            "school": school,
-            "category": category,
-            "image": f"assets/artworks/{output_name}",
-            "notes": " ".join(notes),
-            "analysis": (
-                f"Obra de pintura barroca atribuida en la clasificación de estudio a {artist}. "
-                f"Para comentario de oposición conviene partir de la identificación, situarla en el Barroco del siglo XVII, "
-                f"relacionarla con su ámbito ({country}) y estudiar composición, luz, color, movimiento, naturalismo, función y contexto."
-            ),
-            "folderPath": "/".join(folder_parts),
-            "sourceFile": str(source),
-            "width": width,
-            "height": height,
-            "favorite": False,
-            "reviews": 0,
-            "ease": 2.5,
-            "interval": 0,
-            "due": 0,
-        }
-        records.append(record)
-        stats["ingested"] += 1
-        stats[country] += 1
+            base_slug = slugify(f"{IMAGE_PREFIX}-{country}-{artist}-{title}")
+            counters[base_slug] += 1
+            slug = base_slug if counters[base_slug] == 1 else f"{base_slug}-{counters[base_slug]}"
+            output_name = f"{slug}.jpg"
+            output_path = OUTPUT_DIR / output_name
+
+            try:
+                width, height = convert_image(source, output_path)
+            except Exception as exc:  # noqa: BLE001 - keep ingest going and report file count.
+                print(f"SKIP {source}: {exc}")
+                stats["skipped_unreadable"] += 1
+                continue
+
+            notes = [
+                "Pintura barroca.",
+                f"País/ámbito: {country}.",
+                f"Autor: {artist}.",
+            ]
+            if school:
+                notes.append(f"Corriente o escuela: {school}.")
+            if category:
+                notes.append(f"Tema de la carpeta original: {category}.")
+            notes.append("Imagen incorporada desde la carpeta local de pintura barroca para estudio visual tipo INSTART.")
+
+            record = {
+                "id": slug,
+                "title": title,
+                "artist": artist,
+                "date": "siglo XVII",
+                "style": style,
+                "period": "Barroco",
+                "type": "Pintura",
+                "country": country,
+                "school": school,
+                "category": category,
+                "image": f"assets/artworks/{output_name}",
+                "notes": " ".join(notes),
+                "analysis": (
+                    f"Obra de pintura barroca atribuida en la clasificación de estudio a {artist}. "
+                    f"Para comentario de oposición conviene partir de la identificación, situarla en el Barroco del siglo XVII, "
+                    f"relacionarla con su ámbito ({country}) y estudiar composición, luz, color, movimiento, naturalismo, función y contexto."
+                ),
+                "folderPath": "/".join(folder_parts),
+                "sourceFile": str(source),
+                "width": width,
+                "height": height,
+                "favorite": False,
+                "reviews": 0,
+                "ease": 2.5,
+                "interval": 0,
+                "due": 0,
+            }
+            records.append(record)
+            stats["ingested"] += 1
+            stats[country] += 1
 
     return records, stats
 
@@ -233,9 +264,6 @@ def write_data(records: list[dict]) -> None:
 
 
 def main() -> None:
-    if not SOURCE_ROOT.exists():
-        raise SystemExit(f"No existe la carpeta fuente: {SOURCE_ROOT}")
-
     clean_previous_outputs()
     existing_records = read_existing_records()
     new_records, stats = build_records()

@@ -1,6 +1,6 @@
 const STORAGE_KEY = "ars-memoria-artworks";
 const VERSION_KEY = "ars-memoria-version";
-const APP_VERSION = "front-instagram-baroque-painting-v1";
+const APP_VERSION = "front-instagram-baroque-painting-v2";
 const DAY = 24 * 60 * 60 * 1000;
 const STORY_DURATION = 10000;
 const PULL_REFRESH_THRESHOLD = 86;
@@ -19,6 +19,8 @@ let activeStyle = "";
 let activeSchemeGroup = "";
 let activeSchemeTitle = "";
 let schemesMenuCollapsed = false;
+let activeDatabaseCountry = "";
+let activeDatabaseArtist = "";
 let feedShuffleSeed = Math.random();
 let storyQueue = [];
 let storyIndex = 0;
@@ -105,6 +107,10 @@ const els = {
   databaseTotal: document.querySelector("#databaseTotal"),
   databaseStyles: document.querySelector("#databaseStyles"),
   databaseImages: document.querySelector("#databaseImages"),
+  databaseIndexReset: document.querySelector("#databaseIndexReset"),
+  databaseCountryGrid: document.querySelector("#databaseCountryGrid"),
+  databaseAuthorGrid: document.querySelector("#databaseAuthorGrid"),
+  databaseAuthorGallery: document.querySelector("#databaseAuthorGallery"),
   libraryRows: document.querySelector("#libraryRows"),
   styleFilter: document.querySelector("#styleFilter"),
   periodFilter: document.querySelector("#periodFilter"),
@@ -732,6 +738,7 @@ function renderLibrary() {
   els.databaseTotal.textContent = artworks.length;
   els.databaseStyles.textContent = uniqueValues("style").length;
   els.databaseImages.textContent = localImages;
+  renderDatabaseIndex();
   els.libraryRows.replaceChildren();
 
   if (!items.length) {
@@ -758,6 +765,127 @@ function renderLibrary() {
     `;
     els.libraryRows.append(row);
   });
+}
+
+function artworkCountry(artwork) {
+  return artwork.country || artwork.period || "Sin país";
+}
+
+function countryLabel(country) {
+  return country === "Flandes (Belgica)" ? "Flandes" : country;
+}
+
+function groupedCounts(items, keyGetter) {
+  return items.reduce((counts, item) => {
+    const key = keyGetter(item);
+    counts.set(key, (counts.get(key) || 0) + 1);
+    return counts;
+  }, new Map());
+}
+
+function sortedEntries(counts) {
+  return [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+}
+
+function renderDatabaseIndex() {
+  if (!els.databaseCountryGrid || !els.databaseAuthorGrid || !els.databaseAuthorGallery) {
+    return;
+  }
+
+  const countries = sortedEntries(groupedCounts(artworks, artworkCountry));
+  const currentCountry = activeDatabaseCountry;
+  activeDatabaseCountry = currentCountry;
+  const countryItems = currentCountry ? artworks.filter((artwork) => artworkCountry(artwork) === currentCountry) : [];
+  const authors = sortedEntries(groupedCounts(countryItems, (artwork) => artwork.artist || "Autor pendiente"));
+  const currentArtistIsValid = authors.some(([artist]) => artist === activeDatabaseArtist);
+  const currentArtist = currentArtistIsValid ? activeDatabaseArtist : "";
+  activeDatabaseArtist = currentArtist;
+  const galleryItems = currentArtist
+    ? countryItems.filter((artwork) => (artwork.artist || "Autor pendiente") === currentArtist)
+    : [];
+
+  els.databaseIndexReset.hidden = !activeDatabaseCountry && !activeDatabaseArtist;
+  els.databaseCountryGrid.replaceChildren();
+  els.databaseAuthorGrid.replaceChildren();
+  els.databaseAuthorGallery.replaceChildren();
+
+  countries.forEach(([country, count]) => {
+    const button = document.createElement("button");
+    button.className = `country-card${country === currentCountry ? " active" : ""}`;
+    button.type = "button";
+    const sample = artworks.find((artwork) => artworkCountry(artwork) === country);
+    button.innerHTML = `
+      <img src="${sample?.image || placeholderImage({ title: country })}" alt="">
+      <span><strong>${escapeHtml(countryLabel(country))}</strong><small>${count} obras</small></span>
+    `;
+    button.addEventListener("click", () => {
+      activeDatabaseCountry = country;
+      activeDatabaseArtist = "";
+      renderLibrary();
+    });
+    els.databaseCountryGrid.append(button);
+  });
+
+  if (!currentCountry) {
+    els.databaseAuthorGrid.append(emptyNode("Cuando ingestas obras, aqui apareceran los autores por pais."));
+    return;
+  }
+
+  authors.forEach(([artist, count]) => {
+    const button = document.createElement("button");
+    button.className = `author-card${artist === currentArtist ? " active" : ""}`;
+    button.type = "button";
+    const sample = countryItems.find((artwork) => (artwork.artist || "Autor pendiente") === artist);
+    button.innerHTML = `
+      <img src="${sample?.image || placeholderImage({ title: artist })}" alt="">
+      <span><strong>${escapeHtml(artist)}</strong><small>${count} cuadros</small></span>
+    `;
+    button.addEventListener("click", () => {
+      activeDatabaseArtist = artist;
+      renderLibrary();
+      requestAnimationFrame(() => {
+        els.databaseAuthorGallery.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+    els.databaseAuthorGrid.append(button);
+  });
+
+  if (!galleryItems.length) {
+    const hint = document.createElement("div");
+    hint.className = "author-gallery-empty";
+    hint.textContent = "Elige un autor para ver todos sus cuadros.";
+    els.databaseAuthorGallery.append(hint);
+    return;
+  }
+
+  const header = document.createElement("div");
+  header.className = "author-gallery-head";
+  header.innerHTML = `
+    <span><strong>${escapeHtml(currentArtist)}</strong><small>${escapeHtml(countryLabel(currentCountry))} · ${galleryItems.length} obras</small></span>
+    <button class="secondary-button compact" type="button">Ver en Instagram</button>
+  `;
+  header.querySelector("button").addEventListener("click", () => {
+    activeStyle = galleryItems[0]?.style || "";
+    els.styleFilter.value = activeStyle;
+    els.searchInput.value = currentArtist;
+    switchView("feed");
+  });
+  els.databaseAuthorGallery.append(header);
+
+  const grid = document.createElement("div");
+  grid.className = "author-artwork-grid";
+  galleryItems.forEach((artwork) => {
+    const card = document.createElement("button");
+    card.className = "author-artwork-card";
+    card.type = "button";
+    card.innerHTML = `
+      <img src="${artwork.image || placeholderImage(artwork)}" alt="${escapeHtml(artwork.title)}">
+      <span><strong>${escapeHtml(artwork.title)}</strong><small>${escapeHtml(artwork.category || artwork.style || "")}</small></span>
+    `;
+    card.addEventListener("click", () => openStudyCard(artwork));
+    grid.append(card);
+  });
+  els.databaseAuthorGallery.append(grid);
 }
 
 function renderFilters() {
@@ -1424,6 +1552,11 @@ els.refreshFeedButtons.forEach((button) => button.addEventListener("click", refr
 els.navTabs.forEach((tab) => tab.addEventListener("click", () => handleNavClick(tab.dataset.view)));
 els.bottomTabs.forEach((tab) => tab.addEventListener("click", () => handleNavClick(tab.dataset.view)));
 els.mobileIndexButton.addEventListener("click", () => handleNavClick("index"));
+els.databaseIndexReset.addEventListener("click", () => {
+  activeDatabaseCountry = "";
+  activeDatabaseArtist = "";
+  renderLibrary();
+});
 els.searchInput.addEventListener("input", render);
 els.searchInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
