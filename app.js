@@ -1,6 +1,6 @@
 const STORAGE_KEY = "ars-memoria-artworks";
 const VERSION_KEY = "ars-memoria-version";
-const APP_VERSION = "front-instagram-empty-v1";
+const APP_VERSION = "front-instagram-baroque-painting-v1";
 const DAY = 24 * 60 * 60 * 1000;
 const STORY_DURATION = 10000;
 const PULL_REFRESH_THRESHOLD = 86;
@@ -207,7 +207,7 @@ function matchesSearch(artwork) {
     return true;
   }
 
-  return ["title", "artist", "date", "style", "period", "notes"].some((key) =>
+  return ["title", "artist", "date", "style", "period", "type", "country", "school", "category", "notes"].some((key) =>
     normalized(artwork[key]).includes(query)
   );
 }
