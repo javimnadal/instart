@@ -11,7 +11,7 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="assets/instart-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/instart-icon.svg" />
-    <link rel="stylesheet" href="styles.css?v=baroque-painting-spain-20260516" />
+    <link rel="stylesheet" href="styles.css?v=author-index-20260517" />
   </head>
   <body>
     <div class="app-shell">
@@ -114,16 +114,17 @@
           <div class="feed-grid" id="feedGrid"></div>
         </section>
 
-        <section class="view" id="indexView" aria-label="Indice de movimientos artisticos">
+        <section class="view" id="indexView" aria-label="Indice de autores">
           <div class="index-hero">
             <div>
-              <p class="eyebrow">Mapa de estudio</p>
-              <h3>Cronología de movimientos</h3>
-              <p>Base desplegable para organizar temas, obras, autores y repasos por estilo.</p>
+              <p class="eyebrow">ÍNDICE</p>
+              <h3>Carpetas de autores</h3>
+              <p>Repositorio directo: cada autor abre todas las imagenes que llevamos subidas.</p>
             </div>
-            <span id="movementCount">0 estilos</span>
+            <span id="movementCount">0 autores</span>
           </div>
-          <div class="timeline-index" id="timelineIndex"></div>
+          <div class="author-folder-grid" id="authorIndexGrid"></div>
+          <div class="author-gallery" id="authorIndexGallery"></div>
         </section>
 
         <section class="view" id="schemesView" aria-label="Esquemas visuales de arte">
@@ -221,16 +222,15 @@
             <div><strong id="databaseStyles">0</strong><span>estilos</span></div>
             <div><strong id="databaseImages">0</strong><span>imagenes locales</span></div>
           </div>
-          <section class="database-index" aria-label="Indice por paises y autores">
+          <section class="database-index" aria-label="Indice por autores">
             <div class="database-index-head">
               <div>
                 <p class="eyebrow">ÍNDICE</p>
-                <h3>Países y autores</h3>
+                <h3>Autores</h3>
               </div>
-              <button class="ghost-button" id="databaseIndexReset" type="button">Ver países</button>
+              <button class="ghost-button" id="databaseIndexReset" type="button">Ver autores</button>
             </div>
-            <div class="country-grid" id="databaseCountryGrid"></div>
-            <div class="author-grid" id="databaseAuthorGrid"></div>
+            <div class="author-folder-grid" id="databaseAuthorGrid"></div>
             <div class="author-gallery" id="databaseAuthorGallery"></div>
           </section>
           <div class="library-toolbar">
@@ -319,9 +319,9 @@
       </figure>
     </section>
 
-    <script src="artworks-data.js?v=baroque-painting-spain-20260516"></script>
-    <script src="chronology-data.js?v=baroque-painting-spain-20260516"></script>
-    <script src="schemes-data.js?v=baroque-painting-spain-20260516"></script>
-    <script src="app.js?v=baroque-painting-spain-20260516"></script>
+    <script src="artworks-data.js?v=author-index-20260517"></script>
+    <script src="chronology-data.js?v=author-index-20260517"></script>
+    <script src="schemes-data.js?v=author-index-20260517"></script>
+    <script src="app.js?v=author-index-20260517"></script>
   </body>
 </html>

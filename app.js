@@ -1,6 +1,6 @@
 const STORAGE_KEY = "ars-memoria-artworks";
 const VERSION_KEY = "ars-memoria-version";
-const APP_VERSION = "front-instagram-baroque-painting-v2";
+const APP_VERSION = "front-instagram-author-index-v1";
 const DAY = 24 * 60 * 60 * 1000;
 const STORY_DURATION = 10000;
 const PULL_REFRESH_THRESHOLD = 86;
@@ -19,8 +19,7 @@ let activeStyle = "";
 let activeSchemeGroup = "";
 let activeSchemeTitle = "";
 let schemesMenuCollapsed = false;
-let activeDatabaseCountry = "";
-let activeDatabaseArtist = "";
+let activeAuthorFolder = "";
 let feedShuffleSeed = Math.random();
 let storyQueue = [];
 let storyIndex = 0;
@@ -100,7 +99,8 @@ const els = {
   queueList: document.querySelector("#queueList"),
   feedGrid: document.querySelector("#feedGrid"),
   storiesRail: document.querySelector("#storiesRail"),
-  timelineIndex: document.querySelector("#timelineIndex"),
+  authorIndexGrid: document.querySelector("#authorIndexGrid"),
+  authorIndexGallery: document.querySelector("#authorIndexGallery"),
   movementCount: document.querySelector("#movementCount"),
   schemeTabs: document.querySelector("#schemeTabs"),
   schemesBoard: document.querySelector("#schemesBoard"),
@@ -108,7 +108,6 @@ const els = {
   databaseStyles: document.querySelector("#databaseStyles"),
   databaseImages: document.querySelector("#databaseImages"),
   databaseIndexReset: document.querySelector("#databaseIndexReset"),
-  databaseCountryGrid: document.querySelector("#databaseCountryGrid"),
   databaseAuthorGrid: document.querySelector("#databaseAuthorGrid"),
   databaseAuthorGallery: document.querySelector("#databaseAuthorGallery"),
   libraryRows: document.querySelector("#libraryRows"),
@@ -738,7 +737,7 @@ function renderLibrary() {
   els.databaseTotal.textContent = artworks.length;
   els.databaseStyles.textContent = uniqueValues("style").length;
   els.databaseImages.textContent = localImages;
-  renderDatabaseIndex();
+  renderAuthorFolders(els.databaseAuthorGrid, els.databaseAuthorGallery);
   els.libraryRows.replaceChildren();
 
   if (!items.length) {
@@ -767,14 +766,6 @@ function renderLibrary() {
   });
 }
 
-function artworkCountry(artwork) {
-  return artwork.country || artwork.period || "Sin país";
-}
-
-function countryLabel(country) {
-  return country === "Flandes (Belgica)" ? "Flandes" : country;
-}
-
 function groupedCounts(items, keyGetter) {
   return items.reduce((counts, item) => {
     const key = keyGetter(item);
@@ -787,81 +778,78 @@ function sortedEntries(counts) {
   return [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 }
 
-function renderDatabaseIndex() {
-  if (!els.databaseCountryGrid || !els.databaseAuthorGrid || !els.databaseAuthorGallery) {
+function artworkArtist(artwork) {
+  return artwork.artist || "Autor pendiente";
+}
+
+function getAuthorGroups() {
+  return sortedEntries(groupedCounts(artworks, artworkArtist)).map(([artist, count]) => ({
+    artist,
+    count,
+    items: artworks.filter((artwork) => artworkArtist(artwork) === artist)
+  }));
+}
+
+function renderAuthorIndex() {
+  if (!els.authorIndexGrid || !els.authorIndexGallery) {
+    return;
+  }
+  const authorCount = getAuthorGroups().length;
+  els.movementCount.textContent = `${authorCount} autores`;
+  renderAuthorFolders(els.authorIndexGrid, els.authorIndexGallery);
+}
+
+function renderAuthorFolders(gridEl, galleryEl) {
+  if (!gridEl || !galleryEl) {
     return;
   }
 
-  const countries = sortedEntries(groupedCounts(artworks, artworkCountry));
-  const currentCountry = activeDatabaseCountry;
-  activeDatabaseCountry = currentCountry;
-  const countryItems = currentCountry ? artworks.filter((artwork) => artworkCountry(artwork) === currentCountry) : [];
-  const authors = sortedEntries(groupedCounts(countryItems, (artwork) => artwork.artist || "Autor pendiente"));
-  const currentArtistIsValid = authors.some(([artist]) => artist === activeDatabaseArtist);
-  const currentArtist = currentArtistIsValid ? activeDatabaseArtist : "";
-  activeDatabaseArtist = currentArtist;
+  const groups = getAuthorGroups();
+  const activeExists = groups.some((group) => group.artist === activeAuthorFolder);
+  const currentArtist = activeExists ? activeAuthorFolder : "";
   const galleryItems = currentArtist
-    ? countryItems.filter((artwork) => (artwork.artist || "Autor pendiente") === currentArtist)
+    ? groups.find((group) => group.artist === currentArtist)?.items || []
     : [];
 
-  els.databaseIndexReset.hidden = !activeDatabaseCountry && !activeDatabaseArtist;
-  els.databaseCountryGrid.replaceChildren();
-  els.databaseAuthorGrid.replaceChildren();
-  els.databaseAuthorGallery.replaceChildren();
+  gridEl.replaceChildren();
+  galleryEl.replaceChildren();
 
-  countries.forEach(([country, count]) => {
+  groups.forEach(({ artist, count, items }) => {
     const button = document.createElement("button");
-    button.className = `country-card${country === currentCountry ? " active" : ""}`;
+    button.className = `author-folder${artist === currentArtist ? " active" : ""}`;
     button.type = "button";
-    const sample = artworks.find((artwork) => artworkCountry(artwork) === country);
+    const sampleImages = items.slice(0, 3);
     button.innerHTML = `
-      <img src="${sample?.image || placeholderImage({ title: country })}" alt="">
-      <span><strong>${escapeHtml(countryLabel(country))}</strong><small>${count} obras</small></span>
+      <span class="folder-icon" aria-hidden="true"></span>
+      <span class="folder-title"><strong>${escapeHtml(artist)}</strong><small>${count} imagenes</small></span>
+      <span class="folder-preview">
+        ${sampleImages.map((artwork) => `<img src="${artwork.image || placeholderImage(artwork)}" alt="">`).join("")}
+      </span>
     `;
     button.addEventListener("click", () => {
-      activeDatabaseCountry = country;
-      activeDatabaseArtist = "";
-      renderLibrary();
-    });
-    els.databaseCountryGrid.append(button);
-  });
-
-  if (!currentCountry) {
-    els.databaseAuthorGrid.append(emptyNode("Cuando ingestas obras, aqui apareceran los autores por pais."));
-    return;
-  }
-
-  authors.forEach(([artist, count]) => {
-    const button = document.createElement("button");
-    button.className = `author-card${artist === currentArtist ? " active" : ""}`;
-    button.type = "button";
-    const sample = countryItems.find((artwork) => (artwork.artist || "Autor pendiente") === artist);
-    button.innerHTML = `
-      <img src="${sample?.image || placeholderImage({ title: artist })}" alt="">
-      <span><strong>${escapeHtml(artist)}</strong><small>${count} cuadros</small></span>
-    `;
-    button.addEventListener("click", () => {
-      activeDatabaseArtist = artist;
+      activeAuthorFolder = artist;
+      renderAuthorIndex();
       renderLibrary();
       requestAnimationFrame(() => {
-        els.databaseAuthorGallery.scrollIntoView({ behavior: "smooth", block: "start" });
+        const targetGallery = currentView === "library" ? els.databaseAuthorGallery : els.authorIndexGallery;
+        targetGallery.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
-    els.databaseAuthorGrid.append(button);
+    gridEl.append(button);
   });
 
   if (!galleryItems.length) {
     const hint = document.createElement("div");
     hint.className = "author-gallery-empty";
-    hint.textContent = "Elige un autor para ver todos sus cuadros.";
-    els.databaseAuthorGallery.append(hint);
+    hint.textContent = "Elige una carpeta de autor para ver todas sus imagenes.";
+    galleryEl.append(hint);
     return;
   }
 
   const header = document.createElement("div");
   header.className = "author-gallery-head";
   header.innerHTML = `
-    <span><strong>${escapeHtml(currentArtist)}</strong><small>${escapeHtml(countryLabel(currentCountry))} · ${galleryItems.length} obras</small></span>
+    <span><strong>${escapeHtml(currentArtist)}</strong><small>${galleryItems.length} obras en esta carpeta</small></span>
     <button class="secondary-button compact" type="button">Ver en Instagram</button>
   `;
   header.querySelector("button").addEventListener("click", () => {
@@ -870,7 +858,7 @@ function renderDatabaseIndex() {
     els.searchInput.value = currentArtist;
     switchView("feed");
   });
-  els.databaseAuthorGallery.append(header);
+  galleryEl.append(header);
 
   const grid = document.createElement("div");
   grid.className = "author-artwork-grid";
@@ -885,7 +873,7 @@ function renderDatabaseIndex() {
     card.addEventListener("click", () => openStudyCard(artwork));
     grid.append(card);
   });
-  els.databaseAuthorGallery.append(grid);
+  galleryEl.append(grid);
 }
 
 function renderFilters() {
@@ -916,7 +904,7 @@ function render() {
   renderStats();
   renderReviewStrip();
   renderStories();
-  renderTimelineIndex();
+  renderAuthorIndex();
   renderSchemes();
   renderStudy();
   renderFeed();
@@ -1040,53 +1028,6 @@ function handleSchemeDoubleTap(event) {
       lastSchemeTap = 0;
     }
   }, 340);
-}
-
-function renderTimelineIndex() {
-  const chronology = getChronology();
-  if (!els.timelineIndex) {
-    return;
-  }
-
-  const movementTotal = chronology.reduce((total, era) => total + era.movements.length, 0);
-  els.movementCount.textContent = `${movementTotal} estilos`;
-  els.timelineIndex.replaceChildren();
-
-  chronology.forEach((era, index) => {
-    const details = document.createElement("details");
-    details.className = "era-panel";
-    details.open = index < 2;
-    details.innerHTML = `
-      <summary>
-        <span class="era-dot">${index + 1}</span>
-        <span><strong>${escapeHtml(era.era)}</strong><small>${escapeHtml(era.range)}</small></span>
-        <em>${era.movements.length}</em>
-      </summary>
-      <div class="movement-grid"></div>
-    `;
-
-    const grid = details.querySelector(".movement-grid");
-    era.movements.forEach((movement) => {
-      const count = artworks.filter((artwork) => artwork.style === movement.name).length;
-      const card = document.createElement("button");
-      card.className = `movement-card${activeStyle === movement.name ? " active" : ""}`;
-      card.type = "button";
-      card.innerHTML = `
-        <span>${initials(movement.name)}</span>
-        <strong>${escapeHtml(movement.name)}</strong>
-        <small>${escapeHtml(movement.range)}</small>
-        <em>${count ? `${count} obras` : "pendiente"}</em>
-      `;
-      card.addEventListener("click", () => {
-        activeStyle = movement.name;
-        els.styleFilter.value = movement.name;
-        switchView("feed");
-      });
-      grid.append(card);
-    });
-
-    els.timelineIndex.append(details);
-  });
 }
 
 function switchView(view) {
@@ -1553,8 +1494,8 @@ els.navTabs.forEach((tab) => tab.addEventListener("click", () => handleNavClick(
 els.bottomTabs.forEach((tab) => tab.addEventListener("click", () => handleNavClick(tab.dataset.view)));
 els.mobileIndexButton.addEventListener("click", () => handleNavClick("index"));
 els.databaseIndexReset.addEventListener("click", () => {
-  activeDatabaseCountry = "";
-  activeDatabaseArtist = "";
+  activeAuthorFolder = "";
+  renderAuthorIndex();
   renderLibrary();
 });
 els.searchInput.addEventListener("input", render);
