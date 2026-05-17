@@ -1,6 +1,6 @@
 const STORAGE_KEY = "ars-memoria-artworks";
 const VERSION_KEY = "ars-memoria-version";
-const APP_VERSION = "front-instagram-author-list-v1";
+const APP_VERSION = "front-instagram-baroque-tree-v1";
 const DAY = 24 * 60 * 60 * 1000;
 const STORY_DURATION = 10000;
 const PULL_REFRESH_THRESHOLD = 86;
@@ -19,6 +19,8 @@ let activeStyle = "";
 let activeSchemeGroup = "";
 let activeSchemeTitle = "";
 let schemesMenuCollapsed = false;
+let activeIndexCategory = "";
+let activeIndexCountry = "";
 let activeAuthorFolder = "";
 let feedShuffleSeed = Math.random();
 let storyQueue = [];
@@ -737,7 +739,7 @@ function renderLibrary() {
   els.databaseTotal.textContent = artworks.length;
   els.databaseStyles.textContent = uniqueValues("style").length;
   els.databaseImages.textContent = localImages;
-  renderAuthorFolders(els.databaseAuthorGrid, els.databaseAuthorGallery);
+  renderArtTree(els.databaseAuthorGrid, els.databaseAuthorGallery);
   els.libraryRows.replaceChildren();
 
   if (!items.length) {
@@ -782,88 +784,195 @@ function artworkArtist(artwork) {
   return artwork.artist || "Autor pendiente";
 }
 
-function getAuthorGroups() {
-  return sortedEntries(groupedCounts(artworks, artworkArtist)).map(([artist, count]) => ({
+function artworkCategory(artwork) {
+  return artwork.period || "Sin categoría";
+}
+
+function artworkCountry(artwork) {
+  return artwork.country || "Sin país";
+}
+
+function getAuthorGroups(items = artworks) {
+  return sortedEntries(groupedCounts(items, artworkArtist)).map(([artist, count]) => ({
     artist,
     count,
-    items: artworks.filter((artwork) => artworkArtist(artwork) === artist)
+    items: items.filter((artwork) => artworkArtist(artwork) === artist)
   }));
 }
 
-function authorStyle(items) {
-  const styles = uniqueValuesFrom(items, "period");
-  if (styles.length === 1) {
-    return styles[0];
-  }
-  return styles.length ? styles.join(" / ") : "Sin estilo";
+function getCategoryGroups() {
+  return sortedEntries(groupedCounts(artworks, artworkCategory)).map(([category, count]) => ({
+    category,
+    count,
+    items: artworks.filter((artwork) => artworkCategory(artwork) === category)
+  }));
 }
 
-function authorDisplayName(artist) {
-  return String(artist || "Autor pendiente").toLocaleUpperCase("es-ES");
+function getCountryGroups(items) {
+  return sortedEntries(groupedCounts(items, artworkCountry)).map(([country, count]) => ({
+    country,
+    count,
+    items: items.filter((artwork) => artworkCountry(artwork) === country)
+  }));
+}
+
+function prettyCountry(country) {
+  return country === "Flandes (Belgica)" ? "Flandes" : country;
+}
+
+function displayAuthorName(artist) {
+  const names = {
+    "Alonso cano": "Alonso Cano",
+    "Fran Hals": "Frans Hals",
+    "Fran Snyders": "Frans Snyders",
+    "Georges La tour": "Georges de La Tour",
+    "Herrera el viejo": "Francisco de Herrera el Viejo",
+    "Juan Bautista Maino": "Juan Bautista Maíno",
+    "Murillo": "Bartolomé Esteban Murillo",
+    "Ribalta": "Francisco Ribalta",
+    "Ribera": "José de Ribera",
+    "Sánchez Cotán": "Juan Sánchez Cotán",
+    "Velazquez": "Diego Velázquez",
+    "Zurbaran": "Francisco de Zurbarán"
+  };
+  return names[artist] || artist || "Autor pendiente";
+}
+
+function upperLabel(value) {
+  return String(value || "").toLocaleUpperCase("es-ES");
 }
 
 function renderAuthorIndex() {
   if (!els.authorIndexGrid || !els.authorIndexGallery) {
     return;
   }
-  const authorCount = getAuthorGroups().length;
-  els.movementCount.textContent = `${authorCount} autores`;
-  renderAuthorFolders(els.authorIndexGrid, els.authorIndexGallery);
+  const categoryCount = getCategoryGroups().length;
+  els.movementCount.textContent = `${categoryCount} categoría`;
+  renderArtTree(els.authorIndexGrid, els.authorIndexGallery);
 }
 
-function renderAuthorFolders(gridEl, galleryEl) {
+function renderArtTree(gridEl, galleryEl) {
   if (!gridEl || !galleryEl) {
     return;
   }
 
-  const groups = getAuthorGroups();
-  const activeExists = groups.some((group) => group.artist === activeAuthorFolder);
-  const currentArtist = activeExists ? activeAuthorFolder : "";
-  const galleryItems = currentArtist
-    ? groups.find((group) => group.artist === currentArtist)?.items || []
-    : [];
-
   gridEl.replaceChildren();
   galleryEl.replaceChildren();
 
-  groups.forEach(({ artist, count, items }) => {
-    const button = document.createElement("button");
-    button.className = `author-folder${artist === currentArtist ? " active" : ""}`;
-    button.type = "button";
-    button.innerHTML = `
-      <span class="author-line-main"><strong>${escapeHtml(authorDisplayName(artist))}</strong><em>${escapeHtml(authorStyle(items).toLocaleUpperCase("es-ES"))}</em></span>
-      <small>${count} imagenes</small>
-    `;
-    button.addEventListener("click", () => {
-      activeAuthorFolder = artist;
-      renderAuthorIndex();
-      renderLibrary();
-      requestAnimationFrame(() => {
-        const targetGallery = currentView === "library" ? els.databaseAuthorGallery : els.authorIndexGallery;
-        targetGallery.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
+  const categories = getCategoryGroups();
+  const categoryGroup = categories.find((group) => group.category === activeIndexCategory);
+  const validCategory = categoryGroup ? activeIndexCategory : "";
+  activeIndexCategory = validCategory;
+
+  if (!activeIndexCategory) {
+    renderFolderBreadcrumb(gridEl, ["Repositorio"]);
+    categories.forEach(({ category, count }) => {
+      gridEl.append(folderButton({
+        main: upperLabel(category),
+        meta: "CATEGORÍA",
+        count: `${count} obras`,
+        active: false,
+        onClick: () => {
+          activeIndexCategory = category;
+          activeIndexCountry = "";
+          activeAuthorFolder = "";
+          renderAllIndexes();
+        }
+      }));
     });
-    gridEl.append(button);
+    return;
+  }
+
+  const countries = getCountryGroups(categoryGroup.items);
+  const countryGroup = countries.find((group) => group.country === activeIndexCountry);
+  const validCountry = countryGroup ? activeIndexCountry : "";
+  activeIndexCountry = validCountry;
+
+  if (!activeIndexCountry) {
+    renderFolderBreadcrumb(gridEl, ["Repositorio", activeIndexCategory]);
+    countries.forEach(({ country, count }) => {
+      gridEl.append(folderButton({
+        main: upperLabel(prettyCountry(country)),
+        meta: upperLabel(activeIndexCategory),
+        count: `${count} obras`,
+        active: false,
+        onClick: () => {
+          activeIndexCountry = country;
+          activeAuthorFolder = "";
+          renderAllIndexes();
+        }
+      }));
+    });
+    return;
+  }
+
+  const authors = getAuthorGroups(countryGroup.items);
+  const authorGroup = authors.find((group) => group.artist === activeAuthorFolder);
+  renderFolderBreadcrumb(gridEl, ["Repositorio", activeIndexCategory, prettyCountry(activeIndexCountry)]);
+  authors.forEach(({ artist, count }) => {
+    gridEl.append(folderButton({
+      main: upperLabel(displayAuthorName(artist)),
+      meta: upperLabel(activeIndexCategory),
+      count: `${count} imagenes`,
+      active: artist === activeAuthorFolder,
+      onClick: () => {
+        activeAuthorFolder = artist;
+        renderAllIndexes();
+        requestAnimationFrame(() => {
+          const targetGallery = currentView === "library" ? els.databaseAuthorGallery : els.authorIndexGallery;
+          targetGallery.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
+    }));
   });
 
-  if (!galleryItems.length) {
+  if (!authorGroup) {
     const hint = document.createElement("div");
     hint.className = "author-gallery-empty";
-    hint.textContent = "Elige una carpeta de autor para ver todas sus imagenes.";
+    hint.textContent = "Elige un autor para ver todas sus imagenes.";
     galleryEl.append(hint);
     return;
   }
 
+  renderAuthorGallery(galleryEl, authorGroup);
+}
+
+function renderFolderBreadcrumb(gridEl, parts) {
+  const trail = document.createElement("div");
+  trail.className = "folder-breadcrumb";
+  trail.textContent = parts.map((part) => upperLabel(part)).join(" / ");
+  gridEl.append(trail);
+}
+
+function folderButton({ main, meta, count, active, onClick }) {
+  const button = document.createElement("button");
+  button.className = `author-folder${active ? " active" : ""}`;
+  button.type = "button";
+  button.innerHTML = `
+    <span class="author-line-main"><strong>${escapeHtml(main)}</strong><em>${escapeHtml(meta)}</em></span>
+    <small>${escapeHtml(count)}</small>
+  `;
+  button.addEventListener("click", onClick);
+  return button;
+}
+
+function renderAllIndexes() {
+  renderAuthorIndex();
+  renderLibrary();
+}
+
+function renderAuthorGallery(galleryEl, authorGroup) {
+  const galleryItems = authorGroup.items;
   const header = document.createElement("div");
   header.className = "author-gallery-head";
   header.innerHTML = `
-    <span><strong>${escapeHtml(currentArtist)}</strong><small>${galleryItems.length} obras en esta carpeta</small></span>
+    <span><strong>${escapeHtml(displayAuthorName(authorGroup.artist))}</strong><small>${escapeHtml(prettyCountry(activeIndexCountry))} · ${galleryItems.length} obras</small></span>
     <button class="secondary-button compact" type="button">Ver en Instagram</button>
   `;
   header.querySelector("button").addEventListener("click", () => {
     activeStyle = galleryItems[0]?.style || "";
     els.styleFilter.value = activeStyle;
-    els.searchInput.value = currentArtist;
+    els.searchInput.value = authorGroup.artist;
     switchView("feed");
   });
   galleryEl.append(header);
@@ -1502,9 +1611,10 @@ els.navTabs.forEach((tab) => tab.addEventListener("click", () => handleNavClick(
 els.bottomTabs.forEach((tab) => tab.addEventListener("click", () => handleNavClick(tab.dataset.view)));
 els.mobileIndexButton.addEventListener("click", () => handleNavClick("index"));
 els.databaseIndexReset.addEventListener("click", () => {
+  activeIndexCategory = "";
+  activeIndexCountry = "";
   activeAuthorFolder = "";
-  renderAuthorIndex();
-  renderLibrary();
+  renderAllIndexes();
 });
 els.searchInput.addEventListener("input", render);
 els.searchInput.addEventListener("keydown", (event) => {

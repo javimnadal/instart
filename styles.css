@@ -556,6 +556,13 @@ body.home-active .bottom-nav {
   gap: 6px;
 }
 
+.folder-breadcrumb {
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
 .author-folder {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
