@@ -1,0 +1,12 @@
+**/.git
+**/.git/**
+**/node_modules
+**/.DS_Store
+deploy
+deploy/**
+*.pdf
+*.PDF
+*.docx
+*.DOCX
+tools
+tools/**
