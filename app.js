@@ -1,6 +1,6 @@
 const STORAGE_KEY = "ars-memoria-artworks";
 const VERSION_KEY = "ars-memoria-version";
-const APP_VERSION = "front-instagram-author-index-v1";
+const APP_VERSION = "front-instagram-author-list-v1";
 const DAY = 24 * 60 * 60 * 1000;
 const STORY_DURATION = 10000;
 const PULL_REFRESH_THRESHOLD = 86;
@@ -790,6 +790,18 @@ function getAuthorGroups() {
   }));
 }
 
+function authorStyle(items) {
+  const styles = uniqueValuesFrom(items, "period");
+  if (styles.length === 1) {
+    return styles[0];
+  }
+  return styles.length ? styles.join(" / ") : "Sin estilo";
+}
+
+function authorDisplayName(artist) {
+  return String(artist || "Autor pendiente").toLocaleUpperCase("es-ES");
+}
+
 function renderAuthorIndex() {
   if (!els.authorIndexGrid || !els.authorIndexGallery) {
     return;
@@ -818,13 +830,9 @@ function renderAuthorFolders(gridEl, galleryEl) {
     const button = document.createElement("button");
     button.className = `author-folder${artist === currentArtist ? " active" : ""}`;
     button.type = "button";
-    const sampleImages = items.slice(0, 3);
     button.innerHTML = `
-      <span class="folder-icon" aria-hidden="true"></span>
-      <span class="folder-title"><strong>${escapeHtml(artist)}</strong><small>${count} imagenes</small></span>
-      <span class="folder-preview">
-        ${sampleImages.map((artwork) => `<img src="${artwork.image || placeholderImage(artwork)}" alt="">`).join("")}
-      </span>
+      <span class="author-line-main"><strong>${escapeHtml(authorDisplayName(artist))}</strong><em>${escapeHtml(authorStyle(items).toLocaleUpperCase("es-ES"))}</em></span>
+      <small>${count} imagenes</small>
     `;
     button.addEventListener("click", () => {
       activeAuthorFolder = artist;

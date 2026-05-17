@@ -553,22 +553,17 @@ body.home-active .bottom-nav {
 
 .author-folder-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 12px;
+  gap: 6px;
 }
 
 .author-folder {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  grid-template-areas:
-    "icon title"
-    "preview preview";
-  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 12px;
   align-items: center;
-  min-height: 126px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 12px;
+  padding: 12px 14px;
   background: #fff;
   color: var(--ink);
   text-align: left;
@@ -578,64 +573,34 @@ body.home-active .bottom-nav {
 .author-folder.active,
 .author-folder:hover {
   border-color: rgba(225, 48, 108, 0.5);
-  box-shadow: 0 10px 26px rgba(225, 48, 108, 0.12);
+  background: #fff7fa;
 }
 
-.folder-icon {
-  position: relative;
-  grid-area: icon;
-  width: 38px;
-  height: 30px;
-  border-radius: 5px;
-  background: linear-gradient(135deg, #ffbf5f, #e1306c);
-}
-
-.folder-icon::before {
-  position: absolute;
-  top: -7px;
-  left: 3px;
-  width: 18px;
-  height: 9px;
-  border-radius: 5px 5px 0 0;
-  background: #ffbf5f;
-  content: "";
-}
-
-.folder-title {
-  grid-area: title;
+.author-line-main {
+  display: flex;
   min-width: 0;
+  align-items: baseline;
+  gap: 8px;
 }
 
-.folder-title strong,
-.folder-title small {
-  display: block;
-}
-
-.folder-title strong {
+.author-line-main strong {
   overflow-wrap: anywhere;
-  font-size: 0.98rem;
+  font-size: 0.95rem;
+  letter-spacing: 0;
 }
 
-.folder-title small {
-  margin-top: 2px;
+.author-line-main em {
+  flex: 0 0 auto;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
+  font-style: normal;
   font-weight: 900;
 }
 
-.folder-preview {
-  display: grid;
-  grid-area: preview;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.folder-preview img {
-  width: 100%;
-  aspect-ratio: 1.25;
-  border-radius: 6px;
-  object-fit: cover;
-  background: var(--surface);
+.author-folder small {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 900;
 }
 
 .era-panel {
